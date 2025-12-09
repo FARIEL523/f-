@@ -1,0 +1,181 @@
+package com.mycompany.main;
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.Icon;
+import javax.swing.JButton;
+
+public class CustomButton extends JButton{
+    private boolean over;
+    private Color fill; 
+    private Icon icon;
+    
+    private Color fillOriginal;
+    private Color fillOver;
+    private Color fillClick;
+    private int strokeWidth;
+    private int roundedCorner;
+
+    private int slideDistance = 5;
+    private int currentOffsetX = 0;
+
+    public Icon getIcon() {
+        return icon;
+    }
+
+    public void setIcon(Icon icon) {
+        this.icon = icon;
+        repaint();
+    }
+
+    public Color getFillOriginal() {
+        return fillOriginal;
+    }
+
+    public void setFillOriginal(Color fillOriginal) {
+        this.fillOriginal = fillOriginal;
+        if(!over){
+            fill = fillOriginal;
+            repaint();
+        }
+    }
+
+    public Color getFillOver() {
+        return fillOver;
+    }
+
+    public void setFillOver(Color fillOver) {
+        this.fillOver = fillOver;
+        if(over){
+            fill = fillOver;
+            repaint();
+        }
+    }
+
+    public Color getFillClick() {
+        return fillClick;
+    }
+
+    public void setFillClick(Color fillClick) {
+        this.fillClick = fillClick;
+        if(over){
+            fill = fillClick;
+            repaint();
+        }
+    }
+
+    public int getStrokeWidth() {
+        return strokeWidth;
+    }
+
+    public void setStrokeWidth(int strokeWidth) {
+        this.strokeWidth = strokeWidth;
+        repaint();
+    }
+
+    public int getRoundedCorner() {
+        return roundedCorner;
+    }
+
+    public void setRoundedCorner(int roundedCorner) {
+        this.roundedCorner = roundedCorner;
+        repaint();
+    }
+
+    // NEW: Getter & Setter slideDistance
+    public int getSlideDistance() {
+        return slideDistance;
+    }
+
+    public void setSlideDistance(int slideDistance) {
+        this.slideDistance = slideDistance;
+    }
+
+    @Override
+    protected void paintComponent(Graphics g){
+        if(!isOpaque()){
+            Graphics2D g2d = (Graphics2D) g.create();
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            
+            // translate canvas for sliding effect
+            g2d.translate(-currentOffsetX, 0);
+
+            int s = strokeWidth;
+            int w = getWidth() - (2*s);
+            int h = getHeight() - (2*s);
+            
+            g2d.setColor(fill);
+            g2d.fillRoundRect(s, s, w, h, roundedCorner, roundedCorner);
+            
+            g2d.dispose();
+        }
+
+        // Also translate the icon/text
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.translate(-currentOffsetX, 0);
+        super.paintComponent(g2);
+        g2.dispose();
+    }
+    
+    public CustomButton(){
+        fillOriginal = new Color(255, 0, 0);
+        fillOver = new Color(0, 255, 0);
+        fillClick = new Color(0, 0, 255);
+        strokeWidth = 2;
+        roundedCorner = 10;
+        fill = fillOriginal;
+        icon = null;
+
+        setOpaque(false);
+        setBorder(null);
+        setFocusPainted(false);
+        setContentAreaFilled(false);
+        setBackground(fillOriginal);
+        setForeground(Color.WHITE);
+        
+        addMouseListener(new MouseAdapter(){
+           @Override
+           public void mouseEntered(MouseEvent e) {
+               fill = fillOver;
+               over = true;
+               
+               currentOffsetX = slideDistance;
+               
+               repaint();
+           }
+           
+           @Override
+           public void mousePressed(MouseEvent e) {
+               fill = fillClick;
+               repaint();
+           }
+           
+           @Override
+           public void mouseReleased(MouseEvent e) {
+               if(over){
+                   fill = fillOver;
+               }else{
+                   fill = fillOriginal;
+               }
+
+               currentOffsetX = 0;
+
+               repaint();
+           }
+           
+           @Override
+           public void mouseExited(MouseEvent e) {
+               fill = fillOriginal;
+               over = false;
+
+               currentOffsetX = 0;
+
+               repaint();
+           }
+        });
+    }
+}
